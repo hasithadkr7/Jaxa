@@ -88,7 +88,7 @@ def create_gif(filenames, output, duration=0.5):
 
 
 def download_jaxa_data_for_given_time_frame(start_time, end_time, time_step=30, time_gap=59,
-                                            dir_path='/home/hasitha/PycharmProjects/Jaxa/input'):
+                                            dir_path='/home/hasitha/PycharmProjects/Jaxa/output'):
     """
     :param start_time: str '2019-10-12 08:00:00'
     :param end_time: str '2019-10-12 18:00:00'
