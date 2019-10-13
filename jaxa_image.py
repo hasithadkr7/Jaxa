@@ -102,7 +102,10 @@ def download_jaxa_data_for_given_time_frame(start_time, end_time, time_step=30, 
     start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
     gif_time = start_time
     end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
-    while start_time < end_time:
+    print('start_time : ', start_time)
+    print('end_time : ', end_time)
+    while start_time <= end_time:
+        print('start_time : ', start_time)
         time1 = start_time
         time2 = start_time + timedelta(minutes=time_gap)
         jaxa_url = get_jaxa_download_url(time1, time2)
@@ -117,12 +120,15 @@ def download_jaxa_data_for_given_time_frame(start_time, end_time, time_step=30, 
             image_file_path = os.path.join(dir_path, image_file_name)
             create_png(d03_df, image_file_path)
             start_time = start_time + timedelta(minutes=time_step)
-        except (HTTPError, URLError) as e:
-            print('Download completed.')
-    png_list = list_files(dir_path, '.png')
+        except Exception as e:
+            print('Exception :', str(e))
+    print('png creation completed.')
+    print('dir_path : ', dir_path)
+    png_list = list_files(dir_path, 'png')
     if len(png_list) > 0:
         gif_file = os.path.join(dir_path, '{}.gif'.format(gif_time.strftime('%Y-%m-%d_%H:%M:%S')))
         create_gif(png_list, gif_file)
+        print('GIF creation completed.')
 
 
 def get_jaxa_download_url(time1, time2):
@@ -138,6 +144,6 @@ def get_jaxa_download_url(time1, time2):
 
 
 if __name__ == '__main__':
-    download_jaxa_data_for_given_time_frame('2019-10-12 02:30:00',
-                                            '2019-10-13 10:00:00')
+    download_jaxa_data_for_given_time_frame('2019-10-13 00:00:00',
+                                            '2019-10-13 13:00:00')
 
