@@ -77,8 +77,8 @@ def create_sat_rfield(jaxa_date, dir_path, time_gap=59):
             df = pd.read_csv(jaxa_csv_file)
             d03_df = format_jaxa_df(df)
             d03_df.to_csv(rfiled_file_path, columns=['RainRate'], header=False, index=None)
-            os.remove('rm -f {}'.format(jaxa_zip_file))
-            os.remove('rm -f {}'.format(jaxa_csv_file))
+            os.remove(jaxa_zip_file)
+            os.remove(jaxa_csv_file)
             print('jaxa process completed.')
         else:
             print('jaxa data not available yet for time : '.format(jaxa_date))
