@@ -1,10 +1,8 @@
 from datetime import datetime, timedelta
 import os
-from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 import glob
 import zipfile
-
 import imageio
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -142,6 +140,31 @@ def get_jaxa_download_url(time1, time2):
                                                                      time2.strftime('%M'))
     return jaxa_url
 
+
+def create_sat_rfield(jaxa_date, dir_path, time_gap=59):
+    time1 = datetime.strptime(jaxa_date, '%Y-%m-%d %H:%M:%S')
+    time2 = time1 + timedelta(minutes=time_gap)
+    rfiled_file_name = 'jaxa_{}.txt'.format(time1.strptime('%Y-%m-%d_%H-%M'))
+    jaxa_url = get_jaxa_download_url(time1, time2)
+    jaxa_zip_file = os.path.join(dir_path, os.path.basename(jaxa_url))
+    rfiled_file_path = os.path.join(dir_path, rfiled_file_name)
+    try:
+        download_file(jaxa_url, jaxa_zip_file)
+        unzip_file(jaxa_zip_file, dir_path)
+        jaxa_csv_file = os.path.join(dir_path, (os.path.basename(jaxa_url)).replace('.zip', ''))
+        df = pd.read_csv(jaxa_csv_file)
+        if df:
+            d03_df = format_jaxa_df(df)
+            if d03_df:
+                d03_df.to_csv(rfiled_file_path, columns=['RainRate'], header=False, index=None)
+    except Exception as e:
+        print('create_sat_rfield|Exception :', str(e))
+
+
+def gen_rfield():
+    dir_path = '/mnt/disks/wrf_nfs/wrf/jaxa/rfield'
+    jaxa_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    create_sat_rfield(jaxa_date, dir_path)
 
 if __name__ == '__main__':
     download_jaxa_data_for_given_time_frame('2019-10-13 00:00:00',
