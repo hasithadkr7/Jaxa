@@ -65,6 +65,7 @@ def create_sat_rfield(jaxa_date, dir_path, time_gap=59):
     time2 = time1 + timedelta(minutes=time_gap)
     rfiled_file_name = 'jaxa_{}.txt'.format(rfield_date)
     jaxa_url = get_jaxa_download_url(time1, time2)
+    print('create_sat_rfield|jaxa_url:', jaxa_url)
     jaxa_zip_file = os.path.join(dir_path, os.path.basename(jaxa_url))
     rfiled_file_path = os.path.join(dir_path, rfiled_file_name)
     try:
