@@ -5,15 +5,22 @@ import zipfile
 import pandas as pd
 
 
-def format_jaxa_df(df,
+def format_jaxa_df_d03(df,
                    d03_grid={'lon_min': 79.521461, 'lon_max': 82.189919, 'lat_min': 5.722969, 'lat_max': 10.064255}):
-    df.drop('  Gauge-calibratedRain', axis=1, inplace=True)
-    df.rename(columns={' Lat': 'Lat', '  Lon': 'Lon', '  RainRate': 'RainRate'}, inplace=True)
     d03_df = df[
         (df['Lon'] >= d03_grid['lon_min']) & (df['Lon'] <= d03_grid['lon_max']) & (df['Lat'] >= d03_grid['lat_min']) & (
                 df['Lat'] <= d03_grid['lat_max'])]
     d03_df = d03_df.reset_index(drop=True)
     return d03_df
+
+
+def format_jaxa_df_d01(df,
+                   d01_grid={'lon_min': 79.548683, 'lon_max': 81.019058, 'lat_min': 6.237503, 'lat_max': 7.454063}):
+    d01_df = df[
+        (df['Lon'] >= d01_grid['lon_min']) & (df['Lon'] <= d01_grid['lon_max']) & (df['Lat'] >= d01_grid['lat_min']) & (
+                df['Lat'] <= d01_grid['lat_max'])]
+    d01_df = d01_df.reset_index(drop=True)
+    return d01_df
 
 
 def unzip_file(src, dest='/home/hasitha/PycharmProjects/Jaxa/output'):
@@ -67,6 +74,47 @@ def create_sat_rfield(jaxa_date, dir_path, time_gap=59):
     jaxa_url = get_jaxa_download_url(time1, time2)
     print('create_sat_rfield|jaxa_url:', jaxa_url)
     jaxa_zip_file = os.path.join(dir_path, os.path.basename(jaxa_url))
+    d01_rfiled_file_path = os.path.join(dir_path, 'd01', rfiled_file_name)
+    d01_x_y_file_path = os.path.join(dir_path, 'd01', 'jaxa_d01_xy.csv')
+    d03_rfiled_file_path = os.path.join(dir_path, 'd03', rfiled_file_name)
+    d03_x_y_file_path = os.path.join(dir_path, 'd03', 'jaxa_d03_xy.csv')
+    try:
+        download_file(jaxa_url, jaxa_zip_file)
+        downloaded = os.path.exists(jaxa_zip_file) and os.path.isfile(jaxa_zip_file) and os.stat(
+            jaxa_zip_file).st_size != 0
+        if downloaded:
+            unzip_file(jaxa_zip_file, dir_path)
+            jaxa_csv_file = os.path.join(dir_path, (os.path.basename(jaxa_url)).replace('.zip', ''))
+            df = pd.read_csv(jaxa_csv_file)
+            print('df : ', df)
+            df.drop('  Gauge-calibratedRain', axis=1, inplace=True)
+            df.rename(columns={' Lat': 'Lat', '  Lon': 'Lon', '  RainRate': 'RainRate'}, inplace=True)
+            d01_df = format_jaxa_df_d01(df)
+            d01_df.to_csv(d01_rfiled_file_path, columns=['RainRate'], header=False, index=None)
+            d01_df.to_csv(d01_x_y_file_path, columns=['Lon', 'Lat'], header=False, index=None)
+
+            d03_df = format_jaxa_df_d03(df)
+            d03_df.to_csv(d03_rfiled_file_path, columns=['RainRate'], header=False, index=None)
+            d03_df.to_csv(d03_x_y_file_path, columns=['Lon', 'Lat'], header=False, index=None)
+
+            os.remove(jaxa_zip_file)
+            os.remove(jaxa_csv_file)
+            print('jaxa process completed.')
+        else:
+            print('jaxa data not available yet for time : '.format(jaxa_date))
+    except Exception as e:
+        print('create_sat_rfield|Exception :', str(e))
+
+
+def create_sat_rfield_d01(jaxa_date, dir_path, time_gap=59):
+    time1 = datetime.strptime(jaxa_date, '%Y-%m-%d %H:%M:%S')
+    rfield_date = datetime.strptime(jaxa_date, '%Y-%m-%d %H:%M:%S')
+    rfield_date = rfield_date.strftime('%Y-%m-%d_%H-%M')
+    time2 = time1 + timedelta(minutes=time_gap)
+    rfiled_file_name = 'jaxa_{}.txt'.format(rfield_date)
+    jaxa_url = get_jaxa_download_url(time1, time2)
+    print('create_sat_rfield|jaxa_url:', jaxa_url)
+    jaxa_zip_file = os.path.join(dir_path, os.path.basename(jaxa_url))
     rfiled_file_path = os.path.join(dir_path, rfiled_file_name)
     try:
         download_file(jaxa_url, jaxa_zip_file)
@@ -76,7 +124,36 @@ def create_sat_rfield(jaxa_date, dir_path, time_gap=59):
             unzip_file(jaxa_zip_file, dir_path)
             jaxa_csv_file = os.path.join(dir_path, (os.path.basename(jaxa_url)).replace('.zip', ''))
             df = pd.read_csv(jaxa_csv_file)
-            d03_df = format_jaxa_df(df)
+            d01_df = format_jaxa_df_d01(df)
+            d01_df.to_csv(rfiled_file_path, columns=['RainRate'], header=False, index=None)
+            os.remove(jaxa_zip_file)
+            os.remove(jaxa_csv_file)
+            print('jaxa process completed.')
+        else:
+            print('jaxa data not available yet for time : '.format(jaxa_date))
+    except Exception as e:
+        print('create_sat_rfield|Exception :', str(e))
+
+
+def create_sat_rfield_d03(jaxa_date, dir_path, time_gap=59):
+    time1 = datetime.strptime(jaxa_date, '%Y-%m-%d %H:%M:%S')
+    rfield_date = datetime.strptime(jaxa_date, '%Y-%m-%d %H:%M:%S')
+    rfield_date = rfield_date.strftime('%Y-%m-%d_%H-%M')
+    time2 = time1 + timedelta(minutes=time_gap)
+    rfiled_file_name = 'jaxa_{}.txt'.format(rfield_date)
+    jaxa_url = get_jaxa_download_url(time1, time2)
+    print('create_sat_rfield|jaxa_url:', jaxa_url)
+    jaxa_zip_file = os.path.join(dir_path, os.path.basename(jaxa_url))
+    rfiled_file_path = os.path.join(dir_path, rfiled_file_name)
+    try:
+        download_file(jaxa_url, jaxa_zip_file)
+        downloaded = os.path.exists(jaxa_zip_file) and os.path.isfile(jaxa_zip_file) and os.stat(
+            jaxa_zip_file).st_size != 0
+        if downloaded:
+            unzip_file(jaxa_zip_file, dir_path)
+            jaxa_csv_file = os.path.join(dir_path, (os.path.basename(jaxa_url)).replace('.zip', ''))
+            df = pd.read_csv(jaxa_csv_file)
+            d03_df = format_jaxa_df_d03(df)
             d03_df.to_csv(rfiled_file_path, columns=['RainRate'], header=False, index=None)
             os.remove(jaxa_zip_file)
             os.remove(jaxa_csv_file)
@@ -103,8 +180,10 @@ def roundTime(dt=None, dateDelta=timedelta(minutes=1)):
 
 
 def gen_rfield():
-    dir_path = '/mnt/disks/wrf_nfs/wrf/jaxa/rfield'
-    jaxa_date = (roundTime(datetime.now()- timedelta(hours=3), timedelta(minutes=30))).strftime('%Y-%m-%d %H:%M:%S')
+    dir_path = '/mnt/disks/wrf_nfs/jaxa/rfields'
+    #dir_path = '/home/hasitha/PycharmProjects/Jaxa/output'
+    print('Now : ', datetime.now())
+    jaxa_date = (roundTime(datetime.now() - timedelta(hours=3), timedelta(minutes=30))).strftime('%Y-%m-%d %H:%M:%S')
     print('Create rfield for {}'.format(jaxa_date))
     create_sat_rfield(jaxa_date, dir_path)
 
