@@ -75,9 +75,9 @@ def create_sat_rfield(jaxa_date, dir_path, time_gap=59):
     print('create_sat_rfield|jaxa_url:', jaxa_url)
     jaxa_zip_file = os.path.join(dir_path, os.path.basename(jaxa_url))
     d01_rfiled_file_path = os.path.join(dir_path, 'd01', rfiled_file_name)
-    d01_x_y_file_path = os.path.join(dir_path, 'd01', 'jaxa_d01_xy.csv')
+    #d01_x_y_file_path = os.path.join(dir_path, 'd01', 'jaxa_d01_xy.csv')
     d03_rfiled_file_path = os.path.join(dir_path, 'd03', rfiled_file_name)
-    d03_x_y_file_path = os.path.join(dir_path, 'd03', 'jaxa_d03_xy.csv')
+    #d03_x_y_file_path = os.path.join(dir_path, 'd03', 'jaxa_d03_xy.csv')
     try:
         download_file(jaxa_url, jaxa_zip_file)
         downloaded = os.path.exists(jaxa_zip_file) and os.path.isfile(jaxa_zip_file) and os.stat(
@@ -91,11 +91,11 @@ def create_sat_rfield(jaxa_date, dir_path, time_gap=59):
             df.rename(columns={' Lat': 'Lat', '  Lon': 'Lon', '  RainRate': 'RainRate'}, inplace=True)
             d01_df = format_jaxa_df_d01(df)
             d01_df.to_csv(d01_rfiled_file_path, columns=['RainRate'], header=False, index=None)
-            d01_df.to_csv(d01_x_y_file_path, columns=['Lon', 'Lat'], header=False, index=None)
+            #d01_df.to_csv(d01_x_y_file_path, columns=['Lon', 'Lat'], header=False, index=None)
 
             d03_df = format_jaxa_df_d03(df)
             d03_df.to_csv(d03_rfiled_file_path, columns=['RainRate'], header=False, index=None)
-            d03_df.to_csv(d03_x_y_file_path, columns=['Lon', 'Lat'], header=False, index=None)
+            #d03_df.to_csv(d03_x_y_file_path, columns=['Lon', 'Lat'], header=False, index=None)
 
             os.remove(jaxa_zip_file)
             os.remove(jaxa_csv_file)
